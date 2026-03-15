@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pentadbir | E-Majalah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .sidebar { background: #1a2a6c; min-height: 100vh; color: white; padding-top: 20px; }
+        .nav-link { color: rgba(255,255,255,0.8); cursor: pointer; border-radius: 8px; margin: 5px 15px; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .section-page { display: none; padding: 20px; }
+        .section-page.active { display: block; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .btn-main { padding: 30px; font-size: 1.2rem; border-radius: 15px; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <h5 class="text-center mb-4 fw-bold">ADMIN PANEL</h5>
+            <div class="nav flex-column">
+                <div class="nav-link active" onclick="showPage('home')"><i class="fas fa-home me-2"></i> Menu Utama</div>
+                <div class="nav-link" onclick="showPage('daftar')"><i class="fas fa-user-plus me-2"></i> Daftar User</div>
+                <div class="nav-link" onclick="showPage('kemaskini')"><i class="fas fa-search me-2"></i> Cari & Kemaskini</div>
+                <div class="nav-link" onclick="showPage('upload')"><i class="fas fa-file-upload me-2"></i> Upload PDF</div>
+                <hr>
+                <div class="nav-link text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i> Keluar</div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 bg-light p-0">
+            
+            <div id="page-home" class="section-page active">
+                <div class="p-5 text-center">
+                    <h2 class="fw-bold">Selamat Datang, Pentadbir</h2>
+                    <div class="row mt-5 g-4 justify-content-center">
+                        <div class="col-md-4"><button class="btn btn-primary btn-main w-100 shadow" onclick="showPage('daftar')"><i class="fas fa-user-plus d-block mb-3 fa-2x"></i> Daftar User</button></div>
+                        <div class="col-md-4"><button class="btn btn-warning btn-main w-100 shadow text-white" onclick="showPage('kemaskini')"><i class="fas fa-search d-block mb-3 fa-2x"></i> Cari/Edit/Delete</button></div>
+                        <div class="col-md-4"><button class="btn btn-success btn-main w-100 shadow" onclick="showPage('upload')"><i class="fas fa-file-upload d-block mb-3 fa-2x"></i> Upload PDF</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-daftar" class="section-page">
+                <div class="container">
+                    <div class="card p-4 mx-auto" style="max-width: 600px;">
+                        <h4 class="fw-bold mb-4 text-primary">Daftar Pengguna Baru</h4>
+                        <form id="formDaftar">
+                            <div class="mb-3"><label class="form-label">Nama Penuh</label><input type="text" id="dfNama" class="form-control" required></div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label">No. IC</label><input type="text" id="dfIC" class="form-control" required></div>
+                                <div class="col-md-6 mb-3"><label class="form-label">Status Bayar</label><select id="dfStatus" class="form-select"><option value="YA">YA</option><option value="TIDAK">TIDAK</option></select></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label class="form-label">Username</label><input type="text" id="dfUser" class="form-control" required></div>
+                                <div class="col-md-6 mb-3"><label class="form-label">Password</label><input type="text" id="dfPass" class="form-control" required></div>
+                            </div>
+                            <div class="p-3 bg-light rounded mb-3">
+                                <label class="fw-bold mb-2 small">Akses Majalah (1=Ada, 0=Tiada)</label><br>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="dfAks2025" value="1"> <label class="form-check-label">2025</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="dfAks2026" value="1"> <label class="form-check-label">2026</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">SIMPAN PENGGUNA</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-kemaskini" class="section-page">
+                <div class="container" style="max-width: 800px;">
+                    <h4 class="fw-bold mb-4">Carian & Kemaskini Murid</h4>
+                    <div class="card p-4 mb-4">
+                        <label class="form-label fw-bold">Masukkan No. IC Murid</label>
+                        <div class="input-group">
+                            <input type="text" id="searchIC" class="form-control" placeholder="Contoh: 080101140555">
+                            <button class="btn btn-primary" onclick="searchUser()"><i class="fas fa-search"></i> Cari Murid</button>
+                        </div>
+                    </div>
+
+                    <div id="editArea" style="display: none;">
+                        <div class="card p-4 border-warning">
+                            <h5 class="text-warning fw-bold mb-3">Maklumat Murid Dijumpai</h5>
+                            <form id="formEdit">
+                                <input type="hidden" id="edRow">
+                                <div class="mb-3"><label class="form-label">Nama Penuh</label><input type="text" id="edNama" class="form-control"></div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3"><label class="form-label">Username</label><input type="text" id="edUser" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label">Password</label><input type="text" id="edPass" class="form-control"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Status Bayar</label>
+                                        <select id="edStatus" class="form-select"><option value="YA">YA</option><option value="TIDAK">TIDAK</option></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Akses Majalah</label><br>
+                                        <input type="checkbox" id="edAks2025"> 2025 &nbsp; <input type="checkbox" id="edAks2026"> 2026
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-6"><button type="submit" class="btn btn-warning text-white w-100">SIMPAN PERUBAHAN</button></div>
+                                    <div class="col-6"><button type="button" onclick="confirmDelete()" class="btn btn-danger w-100">DELETE USER</button></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-upload" class="section-page">
+                <div class="container">
+                    <div class="card p-4 text-center mx-auto" style="max-width: 500px;">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-success mb-3"></i>
+                        <h4>Pengurusan Fail PDF</h4>
+                        <p class="text-muted small">Langkah: Muat naik PDF ke Google Drive Sekolah, setkan akses kepada 'Anyone with the link' (Viewer), kemudian salin <b>File ID</b> ke dalam <code>dashboard.html</code>.</p>
+                        <a href="https://drive.google.com" target="_blank" class="btn btn-success">Buka Google Drive</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const GAS_URL = "URL_APPS_SCRIPT_ANDA_DI_SINI";
+
+    function showPage(pageId) {
+        document.querySelectorAll('.section-page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.getElementById('editArea').style.display = 'none'; // Sembunyi edit area bila tukar page
+    }
+
+    // --- DAFTAR ---
+    document.getElementById('formDaftar').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const payload = {
+            action: "create",
+            nama: document.getElementById('dfNama').value,
+            ic: document.getElementById('dfIC').value,
+            username: document.getElementById('dfUser').value,
+            password: document.getElementById('dfPass').value,
+            status: document.getElementById('dfStatus').value,
+            aks2025: document.getElementById('dfAks2025').checked ? 1 : 0,
+            aks2026: document.getElementById('dfAks2026').checked ? 1 : 0
+        };
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => { alert(res.message); document.getElementById('formDaftar').reset(); });
+    });
+
+    // --- CARI USER BERDASARKAN IC ---
+    function searchUser() {
+        const icToSearch = document.getElementById('searchIC').value;
+        if(!icToSearch) return alert("Sila masukkan No. IC!");
+
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify({action: "readAll"}) })
+        .then(res => res.json()).then(res => {
+            const user = res.data.find(u => u.ic == icToSearch);
+            if(user) {
+                document.getElementById('edRow').value = user.row;
+                document.getElementById('edNama').value = user.nama;
+                document.getElementById('edUser').value = user.username;
+                document.getElementById('edPass').value = user.password;
+                document.getElementById('edStatus').value = user.status;
+                document.getElementById('edAks2025').checked = user.aks2025 == 1;
+                document.getElementById('edAks2026').checked = user.aks2026 == 1;
+                document.getElementById('editArea').style.display = 'block';
+            } else {
+                alert("Murid tidak dijumpai!");
+                document.getElementById('editArea').style.display = 'none';
+            }
+        });
+    }
+
+    // --- UPDATE ---
+    document.getElementById('formEdit').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const payload = {
+            action: "update",
+            row: document.getElementById('edRow').value,
+            nama: document.getElementById('edNama').value,
+            username: document.getElementById('edUser').value,
+            password: document.getElementById('edPass').value,
+            status: document.getElementById('edStatus').value,
+            aks2025: document.getElementById('edAks2025').checked ? 1 : 0,
+            aks2026: document.getElementById('edAks2026').checked ? 1 : 0
+        };
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => { alert(res.message); showPage('home'); });
+    });
+
+    // --- DELETE ---
+    function confirmDelete() {
+        if(confirm("AWAS! Adakah anda pasti mahu memadam murid ini secara kekal?")) {
+            const payload = { action: "delete", row: document.getElementById('edRow').value };
+            fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.json()).then(res => { alert(res.message); showPage('home'); });
+        }
+    }
+
+    function logout() { sessionStorage.clear(); window.location.href = "index.html"; }
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Masuk | E-Majalah Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-card { 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            background: white; 
+        }
+        .btn-primary { background: #764ba2; border: none; }
+        .btn-primary:hover { background: #5a377d; }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex justify-content-center">
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark">E-Majalah</h2>
+            <p class="text-muted">Sila log masuk untuk membaca</p>
+        </div>
+        
+        <div id="alertBox"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" id="username" class="form-control form-control-lg" required placeholder="Masukkan Username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-control form-control-lg" required placeholder="Masukkan Password">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" id="btnLogin" class="btn btn-primary btn-lg">Masuk</button>
+            </div>
+        </form>
+        
+        <hr>
+        <p class="text-center text-muted small">Hubungi Admin jika anda mempunyai masalah akses.</p>
+    </div>
+</div>
+
+<script>
+    // 1. DATA ADMIN (Hardcoded seperti permintaan Cikgu)
+    const ADMIN_USER = "adminmajalah";
+    const ADMIN_PASS = "Smkjinjang123";
+
+    // 2. GANTIKAN URL INI DENGAN WEB APP URL DARI GOOGLE APPS SCRIPT ANDA
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUfKpJXFn53vYUNI9LNjL4UVjprwBACxBZYJgQuSlNRGyC-ZwbrEkuYJA_sYLAA1HR/exec";
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnLogin');
+        const alertBox = document.getElementById('alertBox');
+        
+        const userIn = document.getElementById('username').value;
+        const passIn = document.getElementById('password').value;
+
+        // CEK JIKA ADMIN YANG LOGIN
+        if (userIn === ADMIN_USER && passIn === ADMIN_PASS) {
+            sessionStorage.setItem("role", "admin");
+            window.location.href = "admin.html";
+            return; // Berhenti di sini, tak perlu tanya Google Sheets
+        }
+
+        // JIKA BUKAN ADMIN, TANYA GOOGLE SHEETS (USER BIASA)
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyemak...';
+
+        fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify({ username: userIn, password: passIn })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if(response.status === "success") {
+                sessionStorage.setItem("userNama", response.nama);
+                sessionStorage.setItem("userIC", response.ic);
+                sessionStorage.setItem("userAkses", JSON.stringify(response.akses));
+                sessionStorage.setItem("role", "user");
+                
+                window.location.href = "dashboard.html";
+            } else {
+                alertBox.innerHTML = `<div class="alert alert-danger">${response.message}</div>`;
+                btn.disabled = false;
+                btn.innerText = "Masuk";
+            }
+        })
+        .catch(err => {
+            alertBox.innerHTML = `<div class="alert alert-danger">Ralat sambungan! Sila semak URL GAS.</div>`;
+            btn.disabled = false;
+            btn.innerText = "Masuk";
+        });
+    });
+</script>
+
+</body>
+</html>
