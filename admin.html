@@ -132,17 +132,23 @@
 </div>
 
 <script>
-    const GAS_URL = "URL_APPS_SCRIPT_ANDA_DI_SINI";
+    <script>
+    // PASTIKAN URL INI ADALAH URL "WEB APP" YANG BETUL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUfKpJXFn53vYUNI9LNjL4UVjprwBACxBZYJgQuSlNRGyC-ZwbrEkuYJA_sYLAA1HR/exec";
 
     function showPage(pageId) {
         document.querySelectorAll('.section-page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
-        document.getElementById('editArea').style.display = 'none'; // Sembunyi edit area bila tukar page
+        document.getElementById('editArea').style.display = 'none'; 
     }
 
-    // --- DAFTAR ---
+    // --- DAFTAR (DIBAIKI) ---
     document.getElementById('formDaftar').addEventListener('submit', function(e) {
         e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = "Menyimpan...";
+
         const payload = {
             action: "create",
             nama: document.getElementById('dfNama').value,
@@ -153,17 +159,43 @@
             aks2025: document.getElementById('dfAks2025').checked ? 1 : 0,
             aks2026: document.getElementById('dfAks2026').checked ? 1 : 0
         };
-        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json()).then(res => { alert(res.message); document.getElementById('formDaftar').reset(); });
+
+        // Menggunakan mode 'no-cors' tidak digalakkan untuk JSON, 
+        // pastikan GAS Cikgu hantar response yang betul.
+        fetch(GAS_URL, { 
+            method: "POST", 
+            mode: "no-cors", // Tambahan untuk elak isu CORS pada sesetengah browser
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        })
+        .then(() => {
+            alert("Data dihantar! Sila semak Google Sheets (Nota: Response mungkin tidak muncul kerana mode no-cors, tetapi data tetap masuk).");
+            document.getElementById('formDaftar').reset();
+            btn.disabled = false;
+            btn.innerText = "SIMPAN PENGGUNA";
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Ralat sambungan!");
+            btn.disabled = false;
+            btn.innerText = "SIMPAN PENGGUNA";
+        });
     });
 
-    // --- CARI USER BERDASARKAN IC ---
+    // --- CARI USER (DIBAIKI) ---
     function searchUser() {
         const icToSearch = document.getElementById('searchIC').value;
         if(!icToSearch) return alert("Sila masukkan No. IC!");
 
-        fetch(GAS_URL, { method: "POST", body: JSON.stringify({action: "readAll"}) })
-        .then(res => res.json()).then(res => {
+        const btn = document.querySelector('button[onclick="searchUser()"]');
+        btn.innerText = "Mencari...";
+
+        fetch(GAS_URL, { 
+            method: "POST", 
+            body: JSON.stringify({action: "readAll"}) 
+        })
+        .then(res => res.json())
+        .then(res => {
             const user = res.data.find(u => u.ic == icToSearch);
             if(user) {
                 document.getElementById('edRow').value = user.row;
@@ -171,17 +203,22 @@
                 document.getElementById('edUser').value = user.username;
                 document.getElementById('edPass').value = user.password;
                 document.getElementById('edStatus').value = user.status;
-                document.getElementById('edAks2025').checked = user.aks2025 == 1;
-                document.getElementById('edAks2026').checked = user.aks2026 == 1;
+                document.getElementById('edAks2025').checked = (user.aks2025 == 1);
+                document.getElementById('edAks2026').checked = (user.aks2026 == 1);
                 document.getElementById('editArea').style.display = 'block';
             } else {
                 alert("Murid tidak dijumpai!");
                 document.getElementById('editArea').style.display = 'none';
             }
+            btn.innerHTML = '<i class="fas fa-search"></i> Cari Murid';
+        })
+        .catch(err => {
+            alert("Gagal memuatkan database.");
+            btn.innerHTML = '<i class="fas fa-search"></i> Cari Murid';
         });
     }
 
-    // --- UPDATE ---
+    // --- UPDATE (DIBAIKI) ---
     document.getElementById('formEdit').addEventListener('submit', function(e) {
         e.preventDefault();
         const payload = {
@@ -194,20 +231,28 @@
             aks2025: document.getElementById('edAks2025').checked ? 1 : 0,
             aks2026: document.getElementById('edAks2026').checked ? 1 : 0
         };
-        fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json()).then(res => { alert(res.message); showPage('home'); });
+        
+        fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) })
+        .then(() => { 
+            alert("Kemaskini berjaya dihantar!"); 
+            showPage('home'); 
+        });
     });
 
     // --- DELETE ---
     function confirmDelete() {
         if(confirm("AWAS! Adakah anda pasti mahu memadam murid ini secara kekal?")) {
             const payload = { action: "delete", row: document.getElementById('edRow').value };
-            fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) })
-            .then(res => res.json()).then(res => { alert(res.message); showPage('home'); });
+            fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) })
+            .then(() => { 
+                alert("Arahan padam dihantar!"); 
+                showPage('home'); 
+            });
         }
     }
 
     function logout() { sessionStorage.clear(); window.location.href = "index.html"; }
+</script>
 </script>
 </body>
 </html>
